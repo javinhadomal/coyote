@@ -58,13 +58,20 @@ public class Submition{
         // creating py file
 
         String absolutePath = new File("any").getAbsolutePath().replace("any", "") + this.nameFile;
-        String absoluteAEntry = new File("any").getAbsolutePath().replace("any", "")+"arqEntradaCasoTeste1.txt";
+        String entry = "";
+        if (this.nameFile.equals("mergulho.py"))  entry =  "arqEntradaCasoTeste1.txt";
+        else  entry = "arqEntradaCasoTeste2.txt";
+
+        String absoluteAEntry = new File("any").getAbsolutePath().replace("any", "")+entry;
 
         Files.write( Paths.get(this.nameFile) ,   java.util.Base64.getDecoder().decode(this.sourceCode) );
-        Process p = new ProcessBuilder("python3" , absolutePath , String.format("<"+absoluteAEntry)).start();
+        ProcessBuilder p = new ProcessBuilder("python3" , absolutePath);
+        p.start();
+        p.redirectInput(new File(absoluteAEntry));
+        p.redirectOutput(new File(new String("saida"+String.format(this.nameFile.replace(".py", ".txt")))));
+        p.start();
+        //this.writeOutPutInTextFile(p.start());
 
-
-        this.writeOutPutInTextFile(p);
 
         return false;
     }
