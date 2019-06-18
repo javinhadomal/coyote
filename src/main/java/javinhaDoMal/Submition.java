@@ -2,8 +2,9 @@ package javinhaDoMal;
 import java.io.IOException;
 import java.nio.*;
 import java.nio.file.Files;
+import java.text.DateFormat;
 import java.util.*;
-
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.codec.binary.Base64;
 import java.io.*;
 import java.nio.file.Paths;
@@ -54,49 +55,76 @@ public class Submition{
         this.sourceCode = sourceCode;
     }
 
-    public boolean runSourceCode() throws IOException {
+    public boolean runSourceCode() throws IOException, InterruptedException {
         // creating py file
-
-        String absolutePath = new File("any").getAbsolutePath().replace("any", "") + this.nameFile;
-        String entry = "";
-        if (this.nameFile.equals("mergulho.py"))  entry =  "arqEntradaCasoTeste1.txt";
-        else  entry = "arqEntradaCasoTeste2.txt";
-
-        String absoluteAEntry = new File("any").getAbsolutePath().replace("any", "")+entry;
-
         Files.write( Paths.get(this.nameFile) ,   java.util.Base64.getDecoder().decode(this.sourceCode) );
-        ProcessBuilder p = new ProcessBuilder("python3" , absolutePath);
-        p.start();
-        p.redirectInput(new File(absoluteAEntry));
-        p.redirectOutput(new File(new String("saida"+String.format(this.nameFile.replace(".py", ".txt")))));
-        p.start();
-        //this.writeOutPutInTextFile(p.start());
 
+        // Creating string variables name's file
+        String namePyFile = this.nameFile;
+        //String entry = "";
+        //if (this.nameFile.equals("mergulho.py"))  entry =  "mergulhoTestCase1.txt";
+        //else  entry = "arqEntradaCasoTeste2.txt";
+
+        ArrayList<String> TestFiles = this.TestCases();
+        ArrayList<String> OutputFiles = new ArrayList<String>();
+
+        for (Integer i = 0 ; i < TestFiles.size(); i++){
+            // build string outputfile
+            String saidaFileName = new String("saida"+String.format(this.nameFile.replace(".py", i.toString()+".txt")));
+            OutputFiles.add(saidaFileName);
+
+            // running python
+            ProcessBuilder p = new ProcessBuilder("python3" , namePyFile);
+            p.redirectInput(new File( TestFiles.get(i) ) );
+            p.redirectOutput(new File(saidaFileName));
+            p.start().waitFor();
+
+        }
+
+
+        if(this.dateAndHourExecution == null) this.dateAndHourExecution = Calendar.getInstance().getTime();
+        return verifyOutPutFiles(OutputFiles);
+    }
+
+    private ArrayList<String> TestCases(){
+        ArrayList<String> testFiles =  new ArrayList<String>();
+        if (this.nameFile.equals("mergulho.py")){
+            testFiles.add("mergulhoTestCase1.txt");
+            testFiles.add("mergulhoTestCase2.txt");
+            return testFiles;
+        }else{
+            testFiles.add("zerinhoTestCase1.txt");
+            testFiles.add("zerinhoTestCase2.txt");
+            testFiles.add("zerinhoTestCase3.txt");
+            return testFiles;
+        }
+    }
+
+    private boolean verifyOutPutFiles(ArrayList<String> OutputFiles) throws  IOException{
+
+        if(this.nameFile.equals("mergulho.py")){
+
+            // Rotina de correção 1
+            BufferedReader Reader0 = new BufferedReader(new FileReader(OutputFiles.get(0) ));
+            BufferedReader Reader1 = new BufferedReader(new FileReader(OutputFiles.get(1) ));
+            String line1 = Reader0.readLine();
+            String line2 = Reader1.readLine();
+                if ( line1.equals("2 4 ") && line2.equals("* ")){
+                    return true;
+                }
+        }else{
+            BufferedReader Reader0 = new BufferedReader(new FileReader(OutputFiles.get(0) ));
+            BufferedReader Reader1 = new BufferedReader(new FileReader(OutputFiles.get(1) ));
+            BufferedReader Reader2 = new BufferedReader(new FileReader(OutputFiles.get(2) ));
+            String line1 = Reader0.readLine();
+            String line2 = Reader1.readLine();
+            String line3 = Reader2.readLine();
+            if (line1.equals("C") && line2.equals("*") && line3.equals("A")){
+                return true;
+            }
+        }
 
         return false;
     }
 
-    // Classe que escreverá o arquivo com o output do processo gerado pela classe runSourceCode
-    private void writeOutPutInTextFile(Process p) throws IOException {
-
-        BufferedReader stdInput = new BufferedReader(new
-                InputStreamReader(p.getInputStream()));
-
-        BufferedWriter writerOutPutFile = new BufferedWriter(new FileWriter("arqSaidaCasoTeste1.txt"));
-
-        String lineOutPutProcess;
-
-        while ( (  lineOutPutProcess = stdInput.readLine() ) != null ) {
-            writerOutPutFile.write( lineOutPutProcess );
-        }
-
-        writerOutPutFile.close();
-
-        BufferedReader stdError = new BufferedReader(new
-                InputStreamReader(p.getErrorStream()));
-
-        while ( ( lineOutPutProcess = stdError.readLine() ) != null ) {
-            System.out.println(lineOutPutProcess);
-        }
-    }
 }

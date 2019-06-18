@@ -27,7 +27,16 @@ public class Server
             boolean what = newSubmition.runSourceCode();
             historico.appendSubmition(newSubmition);
 
-            return resp.code(200).result("DEU BOM!").done();
+            JSONObject jsonresponse = new JSONObject();
+            jsonresponse.put("filename", data.getString("filename"));
+            jsonresponse.put("problem", data.getString("problem"));
+            if (what){
+                jsonresponse.put("status","SUCCESS");
+                return resp.code(500).result(jsonresponse.toString()).done();
+            }
+            jsonresponse.put("status","FAIL");
+            return resp.code(500).result(jsonresponse.toString()).done();
+
         });
 
 
