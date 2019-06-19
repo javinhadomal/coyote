@@ -10,14 +10,15 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.util.Date;
 
-public class Submition{
+public class Submission {
 
     private Date dateAndHourExecution;
     private String nameFile;
     private String idProblem;
     private String sourceCode;
+    private String status;
 
-    public Submition(String nameFile, String idProblem, String sourceCode) {
+    public Submission(String nameFile, String idProblem, String sourceCode) {
         this.nameFile = nameFile;
         this.idProblem = idProblem;
         this.sourceCode = sourceCode;
@@ -55,6 +56,10 @@ public class Submition{
         this.sourceCode = sourceCode;
     }
 
+    public void setStatus(String status) {this.status = status; }
+
+    public String getStatus() {return this.status; }
+
     public boolean runSourceCode() throws IOException, InterruptedException {
         // creating py file
         Files.write( Paths.get(this.nameFile) ,   java.util.Base64.getDecoder().decode(this.sourceCode) );
@@ -83,7 +88,11 @@ public class Submition{
 
 
         if(this.dateAndHourExecution == null) this.dateAndHourExecution = Calendar.getInstance().getTime();
-        return verifyOutPutFiles(OutputFiles);
+
+        boolean success = verifyOutPutFiles(OutputFiles);
+        if(success) this.status = "SUCCESS";
+        else this.status = "FAIL";
+        return success;
     }
 
     private ArrayList<String> TestCases(){
@@ -101,29 +110,33 @@ public class Submition{
     }
 
     private boolean verifyOutPutFiles(ArrayList<String> OutputFiles) throws  IOException{
+        try{
 
-        if(this.nameFile.equals("mergulho.py")){
+            if(this.nameFile.equals("mergulho.py")){
 
-            // Rotina de correção 1
-            BufferedReader Reader0 = new BufferedReader(new FileReader(OutputFiles.get(0) ));
-            BufferedReader Reader1 = new BufferedReader(new FileReader(OutputFiles.get(1) ));
-            String line1 = Reader0.readLine();
-            String line2 = Reader1.readLine();
-                if ( line1.equals("2 4 ") && line2.equals("* ")){
+                // Rotina de correção 1
+                BufferedReader Reader0 = new BufferedReader(new FileReader(OutputFiles.get(0) ));
+                BufferedReader Reader1 = new BufferedReader(new FileReader(OutputFiles.get(1) ));
+                String line1 = Reader0.readLine();
+                String line2 = Reader1.readLine();
+                if ( line1.equals("2 4") && line2.equals("*")){
                     return true;
                 }
-        }else{
-            BufferedReader Reader0 = new BufferedReader(new FileReader(OutputFiles.get(0) ));
-            BufferedReader Reader1 = new BufferedReader(new FileReader(OutputFiles.get(1) ));
-            BufferedReader Reader2 = new BufferedReader(new FileReader(OutputFiles.get(2) ));
-            String line1 = Reader0.readLine();
-            String line2 = Reader1.readLine();
-            String line3 = Reader2.readLine();
-            if (line1.equals("C") && line2.equals("*") && line3.equals("A")){
-                return true;
+            }else{
+                BufferedReader Reader0 = new BufferedReader(new FileReader(OutputFiles.get(0) ));
+                BufferedReader Reader1 = new BufferedReader(new FileReader(OutputFiles.get(1) ));
+                BufferedReader Reader2 = new BufferedReader(new FileReader(OutputFiles.get(2) ));
+                String line1 = Reader0.readLine();
+                String line2 = Reader1.readLine();
+                String line3 = Reader2.readLine();
+                if (line1.equals("C") && line2.equals("*") && line3.equals("A")){
+                    return true;
+                }
             }
-        }
 
+        }catch (Exception e){
+            return false;
+        }
         return false;
     }
 

@@ -20,7 +20,4 @@ else:
 
 
 
-print(' '.join('{}'.format(k) for k in n) + ' ')
-
-
-
+print(' '.join('{}'.format(k) for k in n))

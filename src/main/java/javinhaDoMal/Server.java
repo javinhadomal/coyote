@@ -11,37 +11,35 @@ public class Server
 {
     public static void main( String[] args )
     {
-
         Historical historico = new Historical();
 
-
         On.post("/maratona").json( (req, resp) -> {
-            req.async();
 
-            byte[] bytes = req.body();
+            // transformando a requisição em json e criando a nova Submission
+            JSONObject data = new JSONObject(new String(req.body()));
 
-            JSONObject data = new JSONObject(new String(bytes));
+            Submission newSubmission = new Submission(
+                    data.getString("filename"),
+                    data.getString("problem"),
+                    data.getString("sourcecode")
+            );
 
-            Submition newSubmition = new Submition(data.getString("filename"), data.getString("problem"), data.getString("sourcecode"));
+            newSubmission.runSourceCode();
+            historico.appendSubmition(newSubmission);
 
-            boolean what = newSubmition.runSourceCode();
-            historico.appendSubmition(newSubmition);
-
-            JSONObject jsonresponse = new JSONObject();
-            jsonresponse.put("filename", data.getString("filename"));
-            jsonresponse.put("problem", data.getString("problem"));
-            if (what){
-                jsonresponse.put("status","SUCCESS");
-                return resp.code(500).result(jsonresponse.toString()).done();
-            }
-            jsonresponse.put("status","FAIL");
-            return resp.code(500).result(jsonresponse.toString()).done();
-
+            return resp.code(200).result(newSubmission).done();
         });
 
+        On.get("/sub").json((reque, resp) -> {
+            JSONObject metadata = new JSONObject(new String(reque.body()));
+
+            Submission newSubmission = new Submission(
+                    metadata.getString("status"),
+                    metadata.getString("idProblem"),
+                    metadata.getString("dateAndHourExecution")
+            );
+            return historico;
+        });
 
     }
-
 }
-
-
